@@ -1,4 +1,4 @@
-# 🌟 Project: Hono + Cloudflare Workers + Prisma
+# 🌟 Project: Medium
 
 Welcome to the documentation of this full-stack project built using **Hono**, **Cloudflare Workers**, and **Prisma**. This project is optimized for speed, scalability, and modern developer experience.
 
