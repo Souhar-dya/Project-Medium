@@ -6,6 +6,7 @@ import { sign,verify } from 'hono/jwt'
 const book = new Hono<{
   Bindings: {
     DATABASE_URL: string
+    JWT_SECRET : string
   },Variables:{
 	userId : string
   }
@@ -23,7 +24,7 @@ book.use('/blog/*',async(c,next)=>{
   const token = authHeader.split(' ')[1]
 
   try {
-    const payload = await verify(token, 'mysecret') as { id: string }
+    const payload = await verify(token, c.env.JWT_SECRET) as { id: string }
 	if(!payload){
 		c.status(404)
 		return c.json({error:'Unauthorized'})
@@ -60,7 +61,7 @@ book.post('/signup', async (c) => {
     },
   })
 
-  const token = await sign({ id: user.id }, 'mysecret')
+  const token = await sign({ id: user.id }, c.env.JWT_SECRET)
 
   return c.json({ jwt: token })
 })
@@ -78,7 +79,7 @@ book.post('/signin', async (c) => {
     return c.json({ error: 'user not found' })
   }
 
-  const jwt = await sign({ id: user.id }, 'mysecret')
+  const jwt = await sign({ id: user.id }, c.env.JWT_SECRET)
   return c.json({ jwt })
 })
 
