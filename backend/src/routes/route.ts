@@ -14,30 +14,30 @@ const book = new Hono<{
 
 
 
-book.use('/blog/*',async(c,next)=>{
-	const authHeader = c.req.header('Authorization')
+book.use('/blog/*', async (c, next) => {
+  const authHeader = c.req.header('Authorization') || "";
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return c.json({ error: 'Unauthorized: No token provided' }, 401)
+  if (!authHeader.startsWith('Bearer ')) {
+    return c.json({ error: 'Unauthorized: No token provided' }, 401);
   }
 
-  const token = authHeader.split(' ')[1]
+  const token = authHeader.split(' ')[1];
 
   try {
-    const payload = await verify(token, c.env.JWT_SECRET) as { id: string }
-	if(!payload){
-		c.status(404)
-		return c.json({error:'Unauthorized'})
-	
-	}
-	
-	c.set('userId', payload.id)
+    const payload = await verify(token, c.env.JWT_SECRET) as { id: string };
 
-	await next()
+    if (!payload?.id) {
+      return c.json({ error: 'Unauthorized: Invalid token payload' }, 401);
+    }
+
+    c.set('userId', payload.id);
+
+    await next(); // Proceed to the actual route
   } catch (err) {
-    return c.json({ error: 'Unauthorized: Invalid token' }, 403)
+    return c.json({ error: 'Unauthorized: Invalid or expired token' }, 403);
   }
-})
+});
+
 
 function getPrismaClient(env: { DATABASE_URL: string }) {
   return new PrismaClient({
@@ -56,6 +56,7 @@ book.post('/signup', async (c) => {
 
   const user = await prisma.user.create({
     data: {
+      name : body.username,
       email: body.email,
       password: body.password,
     },
@@ -82,15 +83,67 @@ book.post('/signin', async (c) => {
   const jwt = await sign({ id: user.id }, c.env.JWT_SECRET)
   return c.json({ jwt })
 })
+book.get('/blog/bulk', async (c) => {
+  const prisma = getPrismaClient(c.env);
+  const page = parseInt(c.req.query('page') || '1');
+  const limit = 10;
+  const skip = (page - 1) * limit;
 
-book.get('/blog/:id', (c) => {
+  const blogs = await prisma.post.findMany({
+    take: limit,
+    skip: skip,
+    
+  });
+
+  return c.json({ blogs : blogs });
+});
+
+book.get('/blog/:id', async (c) => {
   const id = c.req.param('id')
-  return c.text(`get blog route: ${id}`)
+  const prisma = getPrismaClient(c.env)
+  const blog = await prisma.post.findFirst({
+    where :{
+      id : id
+    }
+  })
+  return c.json({blog : blog})
 })
 
-book.post('/blog', (c) => c.text('create blog route'))
-book.put('/blog', (c) => c.text('update blog route'))
+book.post('/blog', async (c) => {
+  const body = await c.req.json();
+  const prisma = getPrismaClient(c.env);
 
+  const blog = await prisma.post.create({
+    data: {
+      authorId: c.get('userId'),
+      title: body.title,
+      content: body.content,
+    },
+  });
+
+  return c.json({
+    id: blog.id,
+  });
+});
+
+book.put('/blog', async(c) => {
+  const body = await c.req.json()
+  const prisma = getPrismaClient(c.env)
+  const blog = await prisma.post.update({
+  where: {
+    id: body.id,
+  },
+  data: {
+    title: body.title,
+    content: body.content,
+
+  },
+})
+  return c.json({
+    id : blog.id
+  })
+
+})
 
 
 
