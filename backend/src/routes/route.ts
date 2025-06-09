@@ -120,7 +120,6 @@ book.post('/blog', async (c) => {
       content: body.content,
     },
   });
-
   return c.json({
     id: blog.id,
   });
