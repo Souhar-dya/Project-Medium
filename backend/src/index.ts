@@ -1,13 +1,16 @@
-import { Hono } from 'hono'
-import book from './routes/route'
-import env from 'dotenv'
+import { Hono } from "hono";
+import book from "./routes/route";
+import env from "dotenv";
+import { cors } from "hono/cors";
 
-const app = new Hono()
+const app = new Hono();
+app.use("/*", cors());
 
-app.route('/app/v1',book)
+app.route("/app/v1", book);
 
 app.notFound((c) => {
-  return c.html(`
+  return c.html(
+    `
     <html>
   <head><title>404 Not Found</title></head>
   <body style="display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; flex-direction: column; text-align: center;">
@@ -16,7 +19,9 @@ app.notFound((c) => {
   </body>
 </html>
 
-  `, 404)
-})
+  `,
+    404
+  );
+});
 
-export default app
+export default app;

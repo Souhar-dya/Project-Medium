@@ -41,16 +41,12 @@ That’s where `prisma-client-clearate` comes in:
 - 🧠 Native TypeScript  
 - 🧩 Compact syntax  
 
-Example:
+How to install:
 
-```ts
-import { Hono } from 'hono';
-
-const app = new Hono();
-app.get('/', (c) => c.text('Hello, Edge!'));
-
+```
 
 git clone https://github.com/Souhar-dya/Project-Medium.git
+
 cd Project-Medium
 
 npm install
