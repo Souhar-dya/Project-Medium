@@ -8,14 +8,7 @@ export interface PostCardProps {
   published: boolean;
 }
 
-export const PostCard = ({
-  id,
-  title,
-  content,
-  authorName,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  published,
-}: PostCardProps) => {
+export const PostCard = ({ id, title, content, authorName }: PostCardProps) => {
   const initial = authorName.charAt(0).toUpperCase();
 
   return (
